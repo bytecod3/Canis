@@ -7,8 +7,11 @@ import os
 
 # parent window
 root = Tk()
+ico = PhotoImage(file='icons/logo.png') # setting window icon
+root.iconphoto(False, ico)
 root.title('Canis')
 root.geometry('500x700')
+
 
 # help and about
 def about(event=None):
@@ -43,6 +46,8 @@ def open_file():
         filehandle = open(filename, "r")
         textpad.insert(1.0, filehandle.read())
         filehandle.close()
+    
+    update_linenumbers()
 
 
 def save():
@@ -78,23 +83,29 @@ def new_file():
     global filename
     filename = None
     textpad.delete(1.0, END)
+    update_linenumbers()
 
 
 # edit menu functions
 def cut():
     textpad.event_generate("<<Cut>>")
+    update_linenumbers()
 
 def copy():
     textpad.event_generate("<<Copy>>")
+    update_linenumbers()
 
 def paste():
     textpad.event_generate("<<Paste>>")
+    update_linenumbers()
 
 def undo():
     textpad.event_generate("<<Undo>>")
+    update_linenumbers()
 
 def redo():
     textpad.event_generate("<<Redo>>")
+    update_linenumbers()
 
 def select_all():
     textpad.tag_add('sel', '1.0', END)
@@ -160,7 +171,9 @@ editmenu.add_command(label="Select All", accelerator = 'Ctrl+A',compound=LEFT,  
 
 # view menu
 viewmenu = Menu(menubar, tearoff=0)
-viewmenu.add_checkbutton(label='Line numbers')
+showln = IntVar()
+showln.set(1)
+viewmenu.add_checkbutton(label='Line numbers', variable=showln)
 viewmenu.add_checkbutton(label='Status Bar')
 viewmenu.add_checkbutton(label='Highlight current line')
 themesmenu = Menu(viewmenu, tearoff=0)
@@ -204,13 +217,26 @@ shortcutbar.pack(expand=NO, fill=X)
 linelabel = Label(root, width=2)
 linelabel.pack(side=LEFT, anchor='nw', fill=Y)
 
+# line numbers
+def update_linenumbers(event=None):
+    txt = ''
+    if showln.get():
+        endline, endcolumn = textpad.index('end-lc').split('.')
+        txt = '\n'.join(map(str, range(1, int(endline))))
+    linelabel.config(text=txt, anchor='nw')
+
+
 # textpad and scroll bar
 textpad = Text(root, undo=True)
+# binding for line numbers
+textpad.bind("<Any-KeyPress>", update_linenumbers)
 textpad.pack(expand=YES, fill=BOTH)
 scroll = Scrollbar(textpad)
 textpad.configure(yscrollcommand=scroll.set)
 scroll.config(command=textpad.yview)
 scroll.pack(side=RIGHT, fill=Y)
+
+
 
 root.config(menu=menubar) # display menu
 root.mainloop()
