@@ -1,4 +1,7 @@
 from tkinter import filedialog
+from tkinter import messagebox
+from PIL import ImageTk, Image
+import PIL
 from tkinter import *
 import os
 
@@ -6,6 +9,20 @@ import os
 root = Tk()
 root.title('Canis')
 root.geometry('500x700')
+
+# help and about
+def about(event=None):
+    messagebox.showinfo("About", "Canis is a customisable minimal C and C++ editor with just enough features for your development needs.\nVisit www.canis.org for more info.")
+
+def help(event=None):
+    messagebox.showinfo("Help", "Visit www.canis.org for help.")
+
+def quit_editor(event=None):
+    if messagebox.askokcancel("Exit", "Are you sure you want to exit?"):
+        root.destroy()
+
+
+root.protocol('WM_DELETE_WINDOW', quit_editor)
 
 def open_file():
     global filename
@@ -21,7 +38,7 @@ def open_file():
     if filename == "":
         filename = None # Absence of file
     else:
-        root.title(os.path.basename(filename) + ' - Canis') # return file basename
+        root.title(str(os.path.basename(filename)) + ' - Canis') # return file basename
         textpad.delete(1.0, END)
         filehandle = open(filename, "r")
         textpad.insert(1.0, filehandle.read())
@@ -40,9 +57,28 @@ def save():
 
 def save_as():
     try:
-        f = filedialog.asksaveasfilename(initialfile='untitled.c', defaultextension='.c')
+        f = filedialog.asksaveasfilename(initialfile='untitled', defaultextension='.c', filetypes=(
+            ('All Files', '*.*'),
+            ('C', '*.c'),
+            ('C++', '*.cpp'),
+            ('Header files', '*.h')
+        ))
+
+        filehandler = open(f, 'w')
+        textoutput = textpad.get(1.0, END)
+        filehandler.write(textoutput)
+        filehandler.close(f)
+        root.title(os.path.basename(f) + ' - Canis')
+
     except:
         pass
+
+def new_file():
+    root.title('Untitled')
+    global filename
+    filename = None
+    textpad.delete(1.0, END)
+
 
 # edit menu functions
 def cut():
@@ -106,11 +142,11 @@ menubar = Menu(root)
 
 # file menu
 filemenu = Menu(menubar, tearoff=0)
-filemenu.add_command(label="New", accelerator='Ctrl+N', compound=LEFT,  underline=0)
+filemenu.add_command(label="New", accelerator='Ctrl+N', compound=LEFT,  underline=0, command=new_file)
 filemenu.add_command(label="Open", accelerator='Ctrl+O', compound=LEFT,  underline=0, command=open_file)
-filemenu.add_command(label="Save", accelerator='Ctrl+S', compound=LEFT,  underline=0)
-filemenu.add_command(label="Save As", compound=LEFT,  underline=0)
-# filemenu.add_command(label="Quit", accelerator='Ctrl+Q', compound=LEFT,  underline=0)
+filemenu.add_command(label="Save", accelerator='Ctrl+S', compound=LEFT,  underline=0, command=save)
+filemenu.add_command(label="Save As", accelerator='Shift+Ctrl+S', compound=LEFT,  underline=0, command=save_as)
+filemenu.add_command(label="Quit", accelerator='Ctrl+Q', compound=LEFT,  underline=0, command=quit_editor)
 
 # edit menu
 editmenu = Menu(menubar, tearoff=0)
@@ -137,20 +173,35 @@ themesmenu.add_radiobutton(label="Solarised")
 themesmenu.add_radiobutton(label="Monokai")
 
 
-# about menu
-aboutmenu = Menu(menubar, tearoff=0)
+# about and help menu
+helpmenu = Menu(menubar, tearoff=0)
+helpmenu.add_command(label="About", command=about)
+helpmenu.add_command(label="Help", command=help)
+
 
 menubar.add_cascade(label="File", menu=filemenu)
 menubar.add_cascade(label="Edit", menu=editmenu)
 menubar.add_cascade(label="View", menu=viewmenu)
-menubar.add_cascade(label="About", menu=aboutmenu)
+menubar.add_cascade(label="Help", menu=helpmenu)
 
 # shortcut bar
-shortcutbar = Frame(root, height=25, bg="light sea green")
+shortcutbar = Frame(root, height=25)
+
+icons = ['new_file', 'open_file', 'save', 'cut', 'copy', 'paste', 'undo', 'redo', 'on_find', 'about']
+width = 25
+height = 25
+
+for i, icon in enumerate(icons):
+    ic = ImageTk.PhotoImage(PIL.Image.open('icons/' + icon + '.png').resize((width, height)))
+    cmd =eval(icon) # convert to expression
+    toolbar = Button(shortcutbar, image=ic, command=cmd)
+    toolbar.image = ic
+    toolbar.pack(side=LEFT)
+
 shortcutbar.pack(expand=NO, fill=X)
 
 # line numbers column
-linelabel = Label(root, width=2, bg='antique white')
+linelabel = Label(root, width=2)
 linelabel.pack(side=LEFT, anchor='nw', fill=Y)
 
 # textpad and scroll bar
