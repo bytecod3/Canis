@@ -110,7 +110,7 @@ filemenu.add_command(label="New", accelerator='Ctrl+N', compound=LEFT,  underlin
 filemenu.add_command(label="Open", accelerator='Ctrl+O', compound=LEFT,  underline=0, command=open_file)
 filemenu.add_command(label="Save", accelerator='Ctrl+S', compound=LEFT,  underline=0)
 filemenu.add_command(label="Save As", compound=LEFT,  underline=0)
-filemenu.add_command(label="Quit", accelerator='Ctrl+Q', compound=LEFT,  underline=0)
+# filemenu.add_command(label="Quit", accelerator='Ctrl+Q', compound=LEFT,  underline=0)
 
 # edit menu
 editmenu = Menu(menubar, tearoff=0)
